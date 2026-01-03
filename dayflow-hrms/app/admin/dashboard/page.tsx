@@ -12,7 +12,8 @@ import { AttendanceChart } from '@/components/charts/AttendanceChart';
 import { PayrollChart } from '@/components/charts/PayrollChart';
 import { StatCard } from '@/components/ui/stat-card';
 import { PageHeader } from '@/components/ui/page-header';
-import { userAPI, leaveAPI, attendanceAPI } from '@/services/api';
+import { userAPI, leaveAPI, attendanceAPI, payrollAPI } from '@/services/api';
+import { PayrollRecord } from '@/types/index';
 import { toast } from 'sonner';
 import {
   Users,
@@ -34,15 +35,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-const mockPayrollData = [
-  { month: 'Jul', amount: 450000 },
-  { month: 'Aug', amount: 465000 },
-  { month: 'Sep', amount: 470000 },
-  { month: 'Oct', amount: 475000 },
-  { month: 'Nov', amount: 478000 },
-  { month: 'Dec', amount: 482000 },
-];
-
 export default function AdminDashboard() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
@@ -54,6 +46,8 @@ export default function AdminDashboard() {
     absent: number;
     leave: number;
   }>>([]);
+  const [payrollChartData, setPayrollChartData] = useState<Array<{ month: string; amount: number }>>([]);
+  const [allPayrollRecords, setAllPayrollRecords] = useState<PayrollRecord[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
@@ -71,7 +65,8 @@ export default function AdminDashboard() {
           leaveAPI.getPendingLeaves(),
           attendanceAPI.getAttendance()
         ]);
-        setEmployees(usersData.filter(e => e.role === 'employee'));
+        const filteredEmployees = usersData.filter(e => e.role === 'employee');
+        setEmployees(filteredEmployees);
         setLeaveRequests(leavesData);
 
         // Process attendance data for chart (last 5 days)
@@ -98,6 +93,47 @@ export default function AdminDashboard() {
         }
         
         setWeeklyAttendanceData(weekData);
+
+        // Fetch payroll data for chart
+        const allPayroll: PayrollRecord[] = [];
+        for (const emp of filteredEmployees) {
+          try {
+            const payrollData = await payrollAPI.getPayroll(emp.id);
+            allPayroll.push(...payrollData);
+          } catch (error) {
+            console.error(`Error fetching payroll for employee ${emp.id}:`, error);
+          }
+        }
+        
+        setAllPayrollRecords(allPayroll);
+
+        // Generate chart data for last 6 months
+        const monthMap: { [key: number]: string } = {
+          1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
+          7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'
+        };
+        
+        const monthlyTotals: { [key: string]: number } = {};
+        allPayroll.forEach(record => {
+          const monthKey = `${record.year}-${record.month}`;
+          if (!monthlyTotals[monthKey]) {
+            monthlyTotals[monthKey] = 0;
+          }
+          monthlyTotals[monthKey] += record.net_salary || 0;
+        });
+
+        const chartData = Object.entries(monthlyTotals)
+          .sort()
+          .slice(-6)
+          .map(([monthKey, amount]) => {
+            const [year, month] = monthKey.split('-');
+            return {
+              month: monthMap[parseInt(month)] || month,
+              amount: Math.round(amount)
+            };
+          });
+
+        setPayrollChartData(chartData);
       } catch (error) {
         toast.error('Failed to load dashboard data');
         console.error(error);
@@ -196,7 +232,7 @@ export default function AdminDashboard() {
             <AttendanceChart data={weeklyAttendanceData} type="bar" />
           </motion.div>
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
-            <PayrollChart data={mockPayrollData} />
+            <PayrollChart data={payrollChartData.length > 0 ? payrollChartData : [{month: 'No data', amount: 0}]} />
           </motion.div>
         </div>
 

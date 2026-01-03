@@ -11,16 +11,8 @@ import { AttendanceChart } from '@/components/charts/AttendanceChart';
 import { PayrollChart } from '@/components/charts/PayrollChart';
 import { Download, FileText, TrendingUp, Users, Clock, DollarSign } from 'lucide-react';
 import { StatCard } from '@/components/ui/stat-card';
-import { attendanceAPI } from '@/services/api';
-
-const mockPayrollData = [
-  { month: 'Jul', amount: 450000 },
-  { month: 'Aug', amount: 465000 },
-  { month: 'Sep', amount: 470000 },
-  { month: 'Oct', amount: 475000 },
-  { month: 'Nov', amount: 478000 },
-  { month: 'Dec', amount: 482000 },
-];
+import { attendanceAPI, userAPI, payrollAPI } from '@/services/api';
+import { PayrollRecord } from '@/types/index';
 
 const reports = [
   {
@@ -58,6 +50,7 @@ export default function AdminReportsPage() {
     absent: number;
     leave: number;
   }>>([]);
+  const [payrollChartData, setPayrollChartData] = useState<Array<{ month: string; amount: number }>>([]);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'admin')) {
@@ -66,9 +59,12 @@ export default function AdminReportsPage() {
   }, [user, isLoading, router]);
 
   useEffect(() => {
-    const fetchAttendanceData = async () => {
+    const fetchData = async () => {
       try {
-        const data = await attendanceAPI.getAttendance();
+        const [attendanceData, usersData] = await Promise.all([
+          attendanceAPI.getAttendance(),
+          userAPI.getAllUsers()
+        ]);
         
         // Get last 4 weeks for report chart
         const weekData = [];
@@ -82,7 +78,7 @@ export default function AdminReportsPage() {
           const weekStartStr = weekStart.toISOString().split('T')[0];
           const weekEndStr = weekEnd.toISOString().split('T')[0];
           
-          const weekRecords = data.filter(record => {
+          const weekRecords = attendanceData.filter(record => {
             return record.date >= weekStartStr && record.date <= weekEndStr;
           });
           
@@ -99,13 +95,53 @@ export default function AdminReportsPage() {
         }
         
         setWeeklyAttendanceData(weekData);
+
+        // Fetch payroll data for chart
+        const filteredEmployees = usersData.filter(e => e.role === 'employee');
+        const allPayroll: PayrollRecord[] = [];
+        for (const emp of filteredEmployees) {
+          try {
+            const payrollData = await payrollAPI.getPayroll(emp.id);
+            allPayroll.push(...payrollData);
+          } catch (error) {
+            console.error(`Error fetching payroll for employee ${emp.id}:`, error);
+          }
+        }
+
+        // Generate chart data for last 6 months
+        const monthMap: { [key: number]: string } = {
+          1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
+          7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'
+        };
+        
+        const monthlyTotals: { [key: string]: number } = {};
+        allPayroll.forEach(record => {
+          const monthKey = `${record.year}-${record.month}`;
+          if (!monthlyTotals[monthKey]) {
+            monthlyTotals[monthKey] = 0;
+          }
+          monthlyTotals[monthKey] += record.net_salary || 0;
+        });
+
+        const chartData = Object.entries(monthlyTotals)
+          .sort()
+          .slice(-6)
+          .map(([monthKey, amount]) => {
+            const [year, month] = monthKey.split('-');
+            return {
+              month: monthMap[parseInt(month)] || month,
+              amount: Math.round(amount)
+            };
+          });
+
+        setPayrollChartData(chartData);
       } catch (error) {
-        console.error('Failed to load attendance data:', error);
+        console.error('Failed to load report data:', error);
       }
     };
 
     if (!isLoading && user && user.role === 'admin') {
-      fetchAttendanceData();
+      fetchData();
     }
   }, [isLoading, user]);
 
@@ -203,7 +239,7 @@ export default function AdminReportsPage() {
             <AttendanceChart data={weeklyAttendanceData} type="line" />
           </motion.div>
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
-            <PayrollChart data={mockPayrollData} />
+            <PayrollChart data={payrollChartData.length > 0 ? payrollChartData : [{month: 'No data', amount: 0}]} />
           </motion.div>
         </div>
 

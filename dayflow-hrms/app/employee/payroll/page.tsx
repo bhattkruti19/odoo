@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
 import { DollarSign, TrendingUp, FileText } from 'lucide-react';
+import { payrollAPI } from '@/services/api';
+import { PayrollRecord } from '@/types';
 import {
   Table,
   TableBody,
@@ -16,22 +18,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-const mockSalaryBreakdown = {
-  basicSalary: 5000,
-  allowances: 1000,
-  deductions: 500,
-  netSalary: 5500,
-};
-
-const mockPayrollHistory = [
-  { id: '1', month: 'December 2025', gross: 6000, deductions: 500, net: 5500, status: 'paid' },
-  { id: '2', month: 'November 2025', gross: 6000, deductions: 500, net: 5500, status: 'paid' },
-  { id: '3', month: 'October 2025', gross: 6000, deductions: 500, net: 5500, status: 'paid' },
-];
-
 export default function EmployeePayrollPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
+  const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'employee')) {
@@ -39,9 +30,39 @@ export default function EmployeePayrollPage() {
     }
   }, [user, isLoading, router]);
 
+  useEffect(() => {
+    const fetchPayroll = async () => {
+      if (!user?.id) return;
+      
+      try {
+        setLoadingData(true);
+        const data = await payrollAPI.getPayroll(user.id);
+        // Sort by year and month descending
+        data.sort((a, b) => {
+          if (b.year !== a.year) return b.year - a.year;
+          return b.month - a.month;
+        });
+        setPayrollRecords(data);
+      } catch (error) {
+        console.error('Failed to load payroll:', error);
+      } finally {
+        setLoadingData(false);
+      }
+    };
+
+    if (!isLoading && user && user.role === 'employee') {
+      fetchPayroll();
+    }
+  }, [isLoading, user]);
+
   if (isLoading || !user) {
     return null;
   }
+
+  // Get current/latest payroll record
+  const currentPayroll = payrollRecords.length > 0 ? payrollRecords[0] : null;
+  const totalPayroll = payrollRecords.reduce((sum, r) => sum + r.base_salary, 0);
+  const avgSalary = payrollRecords.length > 0 ? (totalPayroll / payrollRecords.length).toFixed(0) : '0';
 
   return (
     <DashboardLayout role="employee">
@@ -58,7 +79,7 @@ export default function EmployeePayrollPage() {
                 <CardTitle className="text-sm font-medium">Basic Salary</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">₹{mockSalaryBreakdown.basicSalary.toLocaleString()}</div>
+                <div className="text-3xl font-bold">₹{currentPayroll?.base_salary.toLocaleString() || '0'}</div>
                 <p className="text-xs text-muted-foreground mt-1">Per month</p>
               </CardContent>
             </Card>
@@ -69,7 +90,7 @@ export default function EmployeePayrollPage() {
                 <CardTitle className="text-sm font-medium">Allowances</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-blue-600">₹{mockSalaryBreakdown.allowances.toLocaleString()}</div>
+                <div className="text-3xl font-bold text-blue-600">₹{currentPayroll?.allowances.toLocaleString() || '0'}</div>
                 <p className="text-xs text-muted-foreground mt-1">Additional benefits</p>
               </CardContent>
             </Card>
@@ -80,7 +101,7 @@ export default function EmployeePayrollPage() {
                 <CardTitle className="text-sm font-medium">Net Salary</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-violet-600">₹{mockSalaryBreakdown.netSalary.toLocaleString()}</div>
+                <div className="text-3xl font-bold text-violet-600">₹{currentPayroll?.net_salary.toLocaleString() || '0'}</div>
                 <p className="text-xs text-muted-foreground mt-1">After deductions</p>
               </CardContent>
             </Card>
@@ -105,7 +126,7 @@ export default function EmployeePayrollPage() {
                       <p className="text-sm text-muted-foreground">Base pay</p>
                     </div>
                   </div>
-                  <p className="text-xl font-bold">₹{mockSalaryBreakdown.basicSalary.toLocaleString()}</p>
+                  <p className="text-xl font-bold">₹{currentPayroll?.base_salary.toLocaleString() || '0'}</p>
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
@@ -118,7 +139,7 @@ export default function EmployeePayrollPage() {
                       <p className="text-sm text-muted-foreground">Transport, Housing, etc.</p>
                     </div>
                   </div>
-                  <p className="text-xl font-bold text-blue-600">+₹{mockSalaryBreakdown.allowances.toLocaleString()}</p>
+                  <p className="text-xl font-bold text-blue-600">+₹{currentPayroll?.allowances.toLocaleString() || '0'}</p>
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-950 rounded-lg">
@@ -131,7 +152,7 @@ export default function EmployeePayrollPage() {
                       <p className="text-sm text-muted-foreground">Tax, Insurance</p>
                     </div>
                   </div>
-                  <p className="text-xl font-bold text-red-600">-₹{mockSalaryBreakdown.deductions.toLocaleString()}</p>
+                  <p className="text-xl font-bold text-red-600">-₹{currentPayroll?.deductions.toLocaleString() || '0'}</p>
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-violet-50 dark:bg-violet-950 rounded-lg border-2 border-violet-500">
@@ -139,7 +160,7 @@ export default function EmployeePayrollPage() {
                     <p className="font-bold text-lg">Net Salary</p>
                     <p className="text-sm text-muted-foreground">Take-home pay</p>
                   </div>
-                  <p className="text-2xl font-bold text-violet-600">₹{mockSalaryBreakdown.netSalary.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-violet-600">₹{currentPayroll?.net_salary.toLocaleString() || '0'}</p>
                 </div>
               </div>
             </CardContent>
@@ -164,19 +185,24 @@ export default function EmployeePayrollPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockPayrollHistory.map((record) => (
-                    <TableRow key={record.id}>
-                      <TableCell className="font-medium">{record.month}</TableCell>
-                      <TableCell>₹{record.gross.toLocaleString()}</TableCell>
-                      <TableCell>₹{record.deductions.toLocaleString()}</TableCell>
-                      <TableCell className="font-bold text-emerald-600">₹{record.net.toLocaleString()}</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
-                          {record.status}
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {payrollRecords.map((record) => {
+                    const monthNames = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                    const monthName = monthNames[record.month];
+                    return (
+                      <TableRow key={record.id}>
+                        <TableCell className="font-medium">{monthName} {record.year}</TableCell>
+                        <TableCell>₹{(record.base_salary + record.allowances + record.bonus).toLocaleString()}</TableCell>
+                        <TableCell>₹{(record.deductions + record.tax).toLocaleString()}</TableCell>
+                        <TableCell className="font-bold text-emerald-600">₹{record.net_salary.toLocaleString()}</TableCell>
+                        <TableCell>
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                            {record.payment_date ? 'paid' : 'pending'}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
                 </TableBody>
               </Table>
             </CardContent>

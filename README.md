@@ -168,12 +168,14 @@ dayflow-hrms-backend/
 ## API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/login` - User login
 - `POST /api/auth/admin/create-user` - Create new user (admin only)
 - `POST /api/auth/change-password-first` - Change password on first login
 - `POST /api/auth/admin/reset-password/{user_id}` - Reset user password (admin only)
 
 ### Users
+
 - `GET /api/users` - Get all users (admin only)
 - `GET /api/users/{user_id}` - Get user details
 - `GET /api/users/me` - Get current user profile
@@ -182,6 +184,7 @@ dayflow-hrms-backend/
 - `DELETE /api/users/{user_id}` - Delete user (admin only)
 
 ### Attendance
+
 - `GET /api/attendance/all` - Get all attendance records (admin) or personal (employee)
 - `GET /api/attendance/my-records` - Get personal attendance
 - `GET /api/attendance/my-stats` - Get personal attendance stats
@@ -189,6 +192,7 @@ dayflow-hrms-backend/
 - `POST /api/attendance/check-out` - Check out
 
 ### Leave
+
 - `GET /api/leave/my-requests` - Get personal leave requests
 - `GET /api/leave/all` - Get all leave requests (admin) or personal (employee)
 - `POST /api/leave` - Create leave request
@@ -196,21 +200,25 @@ dayflow-hrms-backend/
 - `POST /api/leave/{leave_id}/reject` - Reject leave (admin only)
 
 ### Payroll
+
 - `GET /api/payroll` - Get payroll records
 - `PUT /api/payroll/{payroll_id}` - Update payroll (admin only)
 
 ### Reports
+
 - `GET /api/reports/dashboard` - Dashboard statistics
 - `GET /api/reports/attendance` - Attendance reports
 
 ## Environment Configuration
 
 **Frontend** (`.env.local`)
+
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000/api
 ```
 
 **Backend** (`.env`)
+
 ```env
 DATABASE_URL=sqlite:///./dayflow_hrms.db
 SECRET_KEY=your-secret-key-here
@@ -222,6 +230,7 @@ FRONTEND_URL=http://localhost:3000
 ## Database Schema
 
 **Key Tables:**
+
 - `users` - User accounts and profiles
 - `attendance_records` - Daily check-in/check-out logs
 - `leave_requests` - Leave applications with status
@@ -232,12 +241,14 @@ All tables are automatically created via SQLAlchemy models.
 ## API Documentation
 
 Once backend is running, access interactive API documentation:
+
 - **Swagger UI**: http://localhost:8000/api/docs
 - **ReDoc**: http://localhost:8000/api/redoc
 
 ## Development Workflow
 
 ### Frontend Development
+
 - File-based routing in `app/` directory
 - Reusable components in `components/`
 - API calls through `services/api.ts`
@@ -245,6 +256,7 @@ Once backend is running, access interactive API documentation:
 - Context-based state management
 
 ### Backend Development
+
 - Route handlers in `routers/`
 - Database models in `models.py`
 - Request/response schemas in `schemas.py`
@@ -252,6 +264,7 @@ Once backend is running, access interactive API documentation:
 - Role-based access control (admin/employee)
 
 ### Database Changes
+
 ```bash
 # After modifying models.py
 python recreate_db.py  # Reset and recreate
@@ -261,6 +274,7 @@ python seed.py         # Re-seed with sample data
 ## Building for Production
 
 **Frontend**
+
 ```bash
 cd dayflow-hrms
 npm run build
@@ -268,6 +282,7 @@ npm start
 ```
 
 **Backend**
+
 ```bash
 cd dayflow-hrms-backend
 # Use production ASGI server
@@ -275,6 +290,7 @@ gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app --bind 0.0.0.0:8000
 ```
 
 For production, configure:
+
 - PostgreSQL instead of SQLite
 - Environment variables properly
 - HTTPS/SSL certificates
@@ -284,16 +300,19 @@ For production, configure:
 ## Troubleshooting
 
 **Backend won't start:**
+
 - Check Python version (3.8+)
 - Verify virtual environment activated
 - Run `pip install -r requirements.txt`
 
 **Frontend build errors:**
+
 - Clear `.next` folder
 - Run `npm install` again
 - Check Node version (18+)
 
 **Database issues:**
+
 - Run `python recreate_db.py` to reset
 - Check SQLite file permissions
 
