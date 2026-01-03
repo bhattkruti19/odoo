@@ -1,15 +1,29 @@
-# 🌊 Dayflow HRMS
+# Dayflow HRMS
 
-A modern Human Resource Management System built with Next.js 16, FastAPI, and SQLite.
+Full-stack HR management system with employee and admin portals.
 
-## ✨ Features
+## What it does
 
-- **Employee Portal**: Dashboard, Attendance, Leave, Payroll, Profile
-- **Admin Portal**: Analytics, Employee Management, Leave Approval, Payroll Processing
+**For Employees:**
 
-## 🚀 Quick Start
+- Clock in/out and track attendance
+- Apply for leaves
+- View payslips
+- Update profile
 
-### Backend
+**For Admins:**
+
+- Dashboard with analytics
+- Manage employees
+- Approve/reject leave requests
+- Process payroll
+- Generate reports
+
+## Setup
+
+The project has two parts - backend (Python) and frontend (Node.js).
+
+### Backend Setup
 
 ```bash
 cd dayflow-hrms-backend
@@ -20,7 +34,9 @@ python seed.py
 python main.py
 ```
 
-### Frontend
+Backend runs on http://localhost:8000
+
+### Frontend Setup
 
 ```bash
 cd dayflow-hrms
@@ -28,23 +44,53 @@ npm install
 npm run dev
 ```
 
-## 🔐 Demo Credentials
+Frontend runs on http://localhost:3000
 
-**Admin**: amit.sharma@dayflow.com / demo123  
-**Employee**: ananya.gupta@dayflow.com / demo123
+## Login
 
-## 📡 API
+After running seed.py, you can login with:
 
-- **Base URL**: http://localhost:8000/api
-- **Docs**: http://localhost:8000/docs
+Admin account: amit.sharma@dayflow.com / demo123
+Employee account: ananya.gupta@dayflow.com / demo123
 
-## 🛠 Tech Stack
+There are 26 demo accounts total (check seed.py for the complete list).
 
-**Frontend**: Next.js 16, TypeScript, Tailwind CSS  
-**Backend**: FastAPI, SQLAlchemy, JWT  
-**Database**: SQLite
+## API Documentation
 
-## 📝 License
+The backend API docs are available at http://localhost:8000/docs when the server is running.
+
+Main endpoints:
+
+- /api/auth/login - User authentication
+- /api/users - User management
+- /api/attendance - Check in/out
+- /api/leave - Leave requests
+- /api/payroll - Payroll records
+
+## Tech Stack
+
+Frontend: Next.js 16, React, TypeScript, Tailwind CSS
+Backend: FastAPI, SQLAlchemy, Python 3.10+
+Database: SQLite (easily switchable to PostgreSQL)
+
+## Project Structure
+
+```
+dayflow-hrms/                  # Frontend
+├── app/                       # Next.js pages
+├── components/                # React components
+├── services/api.ts           # API client
+└── types/index.ts            # TypeScript types
+
+dayflow-hrms-backend/          # Backend
+├── routers/                   # API routes
+├── models.py                  # Database models
+├── schemas.py                 # Request/response schemas
+├── auth.py                    # Authentication
+└── main.py                    # FastAPI app
+```
+
+## License
 
 MIT
 │ Frontend (Next.js) │
