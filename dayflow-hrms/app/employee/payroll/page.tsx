@@ -203,7 +203,6 @@ export default function EmployeePayrollPage() {
                     );
                   })}
                 </TableBody>
-                </TableBody>
               </Table>
             </CardContent>
           </Card>

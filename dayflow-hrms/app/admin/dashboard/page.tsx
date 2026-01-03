@@ -114,7 +114,7 @@ export default function AdminDashboard() {
         };
         
         const monthlyTotals: { [key: string]: number } = {};
-        allPayroll.forEach(record => {
+        allPayroll.forEach((record: any) => {
           const monthKey = `${record.year}-${record.month}`;
           if (!monthlyTotals[monthKey]) {
             monthlyTotals[monthKey] = 0;
@@ -209,7 +209,6 @@ export default function AdminDashboard() {
         <PageHeader
           title="Admin Dashboard"
           description="Monitor and manage your organization's workforce"
-          userName={user.name}
         />
 
         {/* Stats Grid */}

@@ -44,7 +44,7 @@ export default function EmployeeAttendancePage() {
         
         // Check if already checked in today
         const today = new Date().toISOString().split('T')[0];
-        const todayRecord = records.find((r: any) => r.date === today);
+        const todayRecord: any = records.find((r: any) => r.date === today);
         if (todayRecord && todayRecord.check_in) {
           setIsCheckedIn(!todayRecord.check_out);
           if (todayRecord.check_in) {
@@ -197,7 +197,7 @@ export default function EmployeeAttendancePage() {
                           </TableCell>
                         </TableRow>
                       ) : (
-                        attendanceRecords.map((record) => {
+                        attendanceRecords.map((record: any) => {
                           let hours = 0;
                           if (record.check_in && record.check_out) {
                             const checkIn = new Date(record.check_in);

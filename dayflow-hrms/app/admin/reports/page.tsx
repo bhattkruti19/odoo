@@ -115,7 +115,7 @@ export default function AdminReportsPage() {
         };
         
         const monthlyTotals: { [key: string]: number } = {};
-        allPayroll.forEach(record => {
+        allPayroll.forEach((record: any) => {
           const monthKey = `${record.year}-${record.month}`;
           if (!monthlyTotals[monthKey]) {
             monthlyTotals[monthKey] = 0;

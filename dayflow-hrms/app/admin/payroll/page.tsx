@@ -63,7 +63,7 @@ export default function AdminPayrollPage() {
         };
         
         const monthlyTotals: { [key: string]: number } = {};
-        allPayroll.forEach(record => {
+        allPayroll.forEach((record: any) => {
           const monthKey = `${record.year}-${record.month}`;
           if (!monthlyTotals[monthKey]) {
             monthlyTotals[monthKey] = 0;
@@ -106,8 +106,8 @@ export default function AdminPayrollPage() {
   const currentYear = currentDate.getFullYear();
 
   const currentMonthPayroll = allPayrollRecords
-    .filter(r => r.month === currentMonth && r.year === currentYear)
-    .map((record, idx) => {
+    .filter((r: any) => r.month === currentMonth && r.year === currentYear)
+    .map((record: any, idx: number) => {
       const employee = employees.find(e => e.id === record.user_id);
       return {
         id: record.id?.toString() || idx.toString(),
