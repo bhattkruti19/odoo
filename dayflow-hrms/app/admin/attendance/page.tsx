@@ -9,10 +9,9 @@ import { useAuth } from '@/context/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { AttendanceChart } from '@/components/charts/AttendanceChart';
 import { StatCard } from '@/components/ui/stat-card';
-import { attendanceAPI } from '@/services/api';
+import { userAPI } from '@/services/api';
 import { toast } from 'sonner';
 import { Clock, TrendingUp, Users, AlertTriangle } from 'lucide-react';
-import { AttendanceRecord } from '@/types';
 import {
   Table,
   TableBody,
@@ -23,16 +22,18 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+const mockAttendanceData = [
+  { date: 'Mon', present: 231, absent: 8, leave: 6 },
+  { date: 'Tue', present: 235, absent: 5, leave: 5 },
+  { date: 'Wed', present: 230, absent: 10, leave: 5 },
+  { date: 'Thu', present: 238, absent: 4, leave: 3 },
+  { date: 'Fri', present: 231, absent: 8, leave: 6 },
+];
+
 export default function AdminAttendancePage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
-  const [weeklyAttendanceData, setWeeklyAttendanceData] = useState<Array<{
-    date: string;
-    present: number;
-    absent: number;
-    leave: number;
-  }>>([]);
+  const [employees, setEmployees] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
@@ -45,37 +46,8 @@ export default function AdminAttendancePage() {
     const fetchData = async () => {
       try {
         setLoadingData(true);
-        const today = new Date().toISOString().split('T')[0];
-        const data = await attendanceAPI.getAttendance();
-        
-        // Filter for today's records
-        const todayRecords = data.filter(record => record.date === today);
-        setAttendanceRecords(todayRecords);
-
-        // Get last 5 weekdays for chart
-        const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const weekData = [];
-        
-        for (let i = 4; i >= 0; i--) {
-          const date = new Date();
-          date.setDate(date.getDate() - i);
-          const dateStr = date.toISOString().split('T')[0];
-          const dayName = daysOfWeek[date.getDay()];
-          
-          const dayRecords = data.filter(record => record.date === dateStr);
-          const presentCount = dayRecords.filter(r => r.status === 'present' || r.status === 'late').length;
-          const absentCount = dayRecords.filter(r => r.status === 'absent').length;
-          const leaveCount = dayRecords.filter(r => r.status === 'leave').length;
-          
-          weekData.push({
-            date: dayName,
-            present: presentCount,
-            absent: absentCount,
-            leave: leaveCount
-          });
-        }
-        
-        setWeeklyAttendanceData(weekData);
+        const data = await userAPI.getAllUsers();
+        setEmployees(data.filter(e => e.role === 'employee'));
       } catch (error) {
         toast.error('Failed to load attendance data');
         console.error(error);
@@ -93,24 +65,21 @@ export default function AdminAttendancePage() {
     return null;
   }
 
-  // Calculate working hours
-  const calculateHours = (checkIn: string | null, checkOut: string | null): number => {
-    if (!checkIn || !checkOut) return 0;
-    try {
-      const checkInTime = new Date(`1970-01-01T${checkIn}`);
-      const checkOutTime = new Date(`1970-01-01T${checkOut}`);
-      const diff = checkOutTime.getTime() - checkInTime.getTime();
-      return diff / (1000 * 60 * 60); // Convert to hours
-    } catch {
-      return 0;
-    }
-  };
+  // Generate mock attendance for employees
+  const mockTodayAttendance = employees.map((emp, idx) => ({
+    id: emp.id?.toString() || idx.toString(),
+    name: emp.name,
+    employeeId: emp.employeeId,
+    checkIn: idx % 5 === 0 ? null : `${8 + (idx % 2)}:${15 + (idx % 4)}0 AM`,
+    checkOut: idx % 3 === 0 ? null : `06:${Math.random() > 0.5 ? '00' : '10'} PM`,
+    status: idx % 5 === 0 ? 'absent' : idx % 4 === 0 ? 'leave' : idx % 3 === 0 ? 'late' : 'present',
+    hours: idx % 5 === 0 ? 0 : 8 + Math.random() * 1.5,
+  }));
 
-  const presentCount = attendanceRecords.filter(a => a.status === 'present' || a.status === 'late').length;
-  const absentCount = attendanceRecords.filter(a => a.status === 'absent').length;
-  const leaveCount = attendanceRecords.filter(a => a.status === 'leave').length;
-  const totalEmployees = attendanceRecords.length;
-  const attendanceRate = totalEmployees > 0 ? ((presentCount / totalEmployees) * 100).toFixed(1) : '0';
+  const presentCount = mockTodayAttendance.filter(a => a.status === 'present' || a.status === 'late').length;
+  const absentCount = mockTodayAttendance.filter(a => a.status === 'absent').length;
+  const leaveCount = mockTodayAttendance.filter(a => a.status === 'leave').length;
+  const attendanceRate = ((presentCount / mockTodayAttendance.length) * 100).toFixed(1);
 
   return (
     <DashboardLayout role="admin">
@@ -158,7 +127,7 @@ export default function AdminAttendancePage() {
 
         {/* Chart */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <AttendanceChart data={weeklyAttendanceData} type="bar" />
+          <AttendanceChart data={mockAttendanceData} type="bar" />
         </motion.div>
 
         {/* Attendance Table */}
@@ -189,21 +158,17 @@ export default function AdminAttendancePage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {attendanceRecords.map((record) => (
+                      {mockTodayAttendance.map((record) => (
                         <TableRow key={record.id}>
                           <TableCell>
                             <div>
-                              <p className="font-medium">{record.userName}</p>
-                              <p className="text-xs text-muted-foreground">{record.userId}</p>
+                              <p className="font-medium">{record.name}</p>
+                              <p className="text-xs text-muted-foreground">{record.employeeId}</p>
                             </div>
                           </TableCell>
                           <TableCell>{record.checkIn || '-'}</TableCell>
                           <TableCell>{record.checkOut || '-'}</TableCell>
-                          <TableCell>
-                            {record.checkIn && record.checkOut 
-                              ? `${calculateHours(record.checkIn, record.checkOut).toFixed(2)}h` 
-                              : '-'}
-                          </TableCell>
+                          <TableCell>{record.hours > 0 ? `${record.hours}h` : '-'}</TableCell>
                           <TableCell>
                             <Badge
                               variant="secondary"
@@ -238,21 +203,17 @@ export default function AdminAttendancePage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {attendanceRecords.filter(r => r.status === 'present' || r.status === 'late').map((record) => (
+                      {mockTodayAttendance.filter(r => r.status === 'present' || r.status === 'late').map((record) => (
                         <TableRow key={record.id}>
                           <TableCell>
                             <div>
-                              <p className="font-medium">{record.userName}</p>
-                              <p className="text-xs text-muted-foreground">{record.userId}</p>
+                              <p className="font-medium">{record.name}</p>
+                              <p className="text-xs text-muted-foreground">{record.employeeId}</p>
                             </div>
                           </TableCell>
                           <TableCell>{record.checkIn || '-'}</TableCell>
                           <TableCell>{record.checkOut || '-'}</TableCell>
-                          <TableCell>
-                            {record.checkIn && record.checkOut 
-                              ? `${calculateHours(record.checkIn, record.checkOut).toFixed(2)}h` 
-                              : '-'}
-                          </TableCell>
+                          <TableCell>{record.hours > 0 ? `${record.hours.toFixed(1)}h` : '-'}</TableCell>
                           <TableCell>
                             <Badge
                               variant="secondary"
@@ -283,21 +244,17 @@ export default function AdminAttendancePage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {attendanceRecords.filter(r => r.status === 'absent').map((record) => (
+                      {mockTodayAttendance.filter(r => r.status === 'absent').map((record) => (
                         <TableRow key={record.id}>
                           <TableCell>
                             <div>
-                              <p className="font-medium">{record.userName}</p>
-                              <p className="text-xs text-muted-foreground">{record.userId}</p>
+                              <p className="font-medium">{record.name}</p>
+                              <p className="text-xs text-muted-foreground">{record.employeeId}</p>
                             </div>
                           </TableCell>
                           <TableCell>{record.checkIn || '-'}</TableCell>
                           <TableCell>{record.checkOut || '-'}</TableCell>
-                          <TableCell>
-                            {record.checkIn && record.checkOut 
-                              ? `${calculateHours(record.checkIn, record.checkOut).toFixed(2)}h` 
-                              : '-'}
-                          </TableCell>
+                          <TableCell>{record.hours > 0 ? `${record.hours.toFixed(1)}h` : '-'}</TableCell>
                           <TableCell>
                             <Badge
                               variant="secondary"
@@ -324,21 +281,17 @@ export default function AdminAttendancePage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {attendanceRecords.filter(r => r.status === 'leave').map((record) => (
+                      {mockTodayAttendance.filter(r => r.status === 'leave').map((record) => (
                         <TableRow key={record.id}>
                           <TableCell>
                             <div>
-                              <p className="font-medium">{record.userName}</p>
-                              <p className="text-xs text-muted-foreground">{record.userId}</p>
+                              <p className="font-medium">{record.name}</p>
+                              <p className="text-xs text-muted-foreground">{record.employeeId}</p>
                             </div>
                           </TableCell>
                           <TableCell>{record.checkIn || '-'}</TableCell>
                           <TableCell>{record.checkOut || '-'}</TableCell>
-                          <TableCell>
-                            {record.checkIn && record.checkOut 
-                              ? `${calculateHours(record.checkIn, record.checkOut).toFixed(2)}h` 
-                              : '-'}
-                          </TableCell>
+                          <TableCell>{record.hours > 0 ? `${record.hours.toFixed(1)}h` : '-'}</TableCell>
                           <TableCell>
                             <Badge
                               variant="secondary"

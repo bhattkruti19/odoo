@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -11,8 +11,22 @@ import { AttendanceChart } from '@/components/charts/AttendanceChart';
 import { PayrollChart } from '@/components/charts/PayrollChart';
 import { Download, FileText, TrendingUp, Users, Clock, DollarSign } from 'lucide-react';
 import { StatCard } from '@/components/ui/stat-card';
-import { attendanceAPI, userAPI, payrollAPI } from '@/services/api';
-import { PayrollRecord } from '@/types/index';
+
+const mockAttendanceData = [
+  { date: 'Week 1', present: 920, absent: 30, leave: 20 },
+  { date: 'Week 2', present: 935, absent: 20, leave: 15 },
+  { date: 'Week 3', present: 910, absent: 35, leave: 25 },
+  { date: 'Week 4', present: 940, absent: 18, leave: 12 },
+];
+
+const mockPayrollData = [
+  { month: 'Jul', amount: 450000 },
+  { month: 'Aug', amount: 465000 },
+  { month: 'Sep', amount: 470000 },
+  { month: 'Oct', amount: 475000 },
+  { month: 'Nov', amount: 478000 },
+  { month: 'Dec', amount: 482000 },
+];
 
 const reports = [
   {
@@ -44,106 +58,12 @@ const reports = [
 export default function AdminReportsPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
-  const [weeklyAttendanceData, setWeeklyAttendanceData] = useState<Array<{
-    date: string;
-    present: number;
-    absent: number;
-    leave: number;
-  }>>([]);
-  const [payrollChartData, setPayrollChartData] = useState<Array<{ month: string; amount: number }>>([]);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'admin')) {
       router.push('/login?role=admin');
     }
   }, [user, isLoading, router]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [attendanceData, usersData] = await Promise.all([
-          attendanceAPI.getAttendance(),
-          userAPI.getAllUsers()
-        ]);
-        
-        // Get last 4 weeks for report chart
-        const weekData = [];
-        
-        for (let weekNum = 3; weekNum >= 0; weekNum--) {
-          const weekStart = new Date();
-          weekStart.setDate(weekStart.getDate() - (weekNum * 7));
-          const weekEnd = new Date(weekStart);
-          weekEnd.setDate(weekEnd.getDate() + 6);
-          
-          const weekStartStr = weekStart.toISOString().split('T')[0];
-          const weekEndStr = weekEnd.toISOString().split('T')[0];
-          
-          const weekRecords = attendanceData.filter(record => {
-            return record.date >= weekStartStr && record.date <= weekEndStr;
-          });
-          
-          const presentCount = weekRecords.filter(r => r.status === 'present' || r.status === 'late').length;
-          const absentCount = weekRecords.filter(r => r.status === 'absent').length;
-          const leaveCount = weekRecords.filter(r => r.status === 'leave').length;
-          
-          weekData.push({
-            date: `Week ${4 - weekNum}`,
-            present: presentCount,
-            absent: absentCount,
-            leave: leaveCount
-          });
-        }
-        
-        setWeeklyAttendanceData(weekData);
-
-        // Fetch payroll data for chart
-        const filteredEmployees = usersData.filter(e => e.role === 'employee');
-        const allPayroll: PayrollRecord[] = [];
-        for (const emp of filteredEmployees) {
-          try {
-            const payrollData = await payrollAPI.getPayroll(emp.id);
-            allPayroll.push(...payrollData);
-          } catch (error) {
-            console.error(`Error fetching payroll for employee ${emp.id}:`, error);
-          }
-        }
-
-        // Generate chart data for last 6 months
-        const monthMap: { [key: number]: string } = {
-          1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
-          7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'
-        };
-        
-        const monthlyTotals: { [key: string]: number } = {};
-        allPayroll.forEach((record: any) => {
-          const monthKey = `${record.year}-${record.month}`;
-          if (!monthlyTotals[monthKey]) {
-            monthlyTotals[monthKey] = 0;
-          }
-          monthlyTotals[monthKey] += record.net_salary || 0;
-        });
-
-        const chartData = Object.entries(monthlyTotals)
-          .sort()
-          .slice(-6)
-          .map(([monthKey, amount]) => {
-            const [year, month] = monthKey.split('-');
-            return {
-              month: monthMap[parseInt(month)] || month,
-              amount: Math.round(amount)
-            };
-          });
-
-        setPayrollChartData(chartData);
-      } catch (error) {
-        console.error('Failed to load report data:', error);
-      }
-    };
-
-    if (!isLoading && user && user.role === 'admin') {
-      fetchData();
-    }
-  }, [isLoading, user]);
 
   if (isLoading || !user) {
     return null;
@@ -236,10 +156,10 @@ export default function AdminReportsPage() {
         {/* Charts Grid */}
         <div className="grid gap-6 lg:grid-cols-2">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
-            <AttendanceChart data={weeklyAttendanceData} type="line" />
+            <AttendanceChart data={mockAttendanceData} type="line" />
           </motion.div>
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
-            <PayrollChart data={payrollChartData.length > 0 ? payrollChartData : [{month: 'No data', amount: 0}]} />
+            <PayrollChart data={mockPayrollData} />
           </motion.div>
         </div>
 

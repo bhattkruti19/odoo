@@ -434,11 +434,58 @@ export default function AdminEmployeesPage() {
                       />
                     </div>
                     <div className="space-y-2">
+                      <Label htmlFor="edit-manager">Manager</Label>
+                      <Input
+                        id="edit-manager"
+                        defaultValue={editEmployee.manager || ''}
+                        placeholder="Enter manager name"
+                      />
+                    </div>
+                    <div className="space-y-2">
                       <Label htmlFor="edit-joinDate">Join Date</Label>
                       <Input
                         id="edit-joinDate"
                         defaultValue={editEmployee.joinDate || ''}
                         placeholder="Enter join date"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-semibold mb-3 text-foreground">Financial Details</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-baseSalary">Base Salary (₹)</Label>
+                      <Input
+                        id="edit-baseSalary"
+                        type="number"
+                        defaultValue={editEmployee.baseSalary || ''}
+                        placeholder="Enter base salary"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-bankName">Bank Name</Label>
+                      <Input
+                        id="edit-bankName"
+                        defaultValue={editEmployee.bankName || ''}
+                        placeholder="Enter bank name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-accountNumber">Account Number</Label>
+                      <Input
+                        id="edit-accountNumber"
+                        defaultValue={editEmployee.accountNumber || ''}
+                        placeholder="Enter account number"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-taxId">Tax ID</Label>
+                      <Input
+                        id="edit-taxId"
+                        defaultValue={editEmployee.taxId || ''}
+                        placeholder="Enter tax ID"
                       />
                     </div>
                   </div>

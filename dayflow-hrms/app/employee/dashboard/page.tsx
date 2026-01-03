@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { AttendanceChart } from '@/components/charts/AttendanceChart';
 import { StatCard } from '@/components/ui/stat-card';
 import { PageHeader } from '@/components/ui/page-header';
-import { attendanceAPI } from '@/services/api';
 import {
   Clock,
   Calendar,
@@ -54,6 +53,16 @@ const quickActions = [
     icon: DollarSign,
     color: 'from-orange-500 to-amber-500',
   },
+];
+
+const mockAttendanceData = [
+  { date: 'Mon', present: 1, absent: 0, leave: 0 },
+  { date: 'Tue', present: 1, absent: 0, leave: 0 },
+  { date: 'Wed', present: 1, absent: 0, leave: 0 },
+  { date: 'Thu', present: 1, absent: 0, leave: 0 },
+  { date: 'Fri', present: 0, absent: 0, leave: 1 },
+  { date: 'Sat', present: 0, absent: 0, leave: 0 },
+  { date: 'Sun', present: 0, absent: 0, leave: 0 },
 ];
 
 const mockActivityLogs = [
@@ -105,58 +114,12 @@ const itemVariants = {
 export default function EmployeeDashboard() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
-  const [weeklyAttendanceData, setWeeklyAttendanceData] = useState<Array<{
-    date: string;
-    present: number;
-    absent: number;
-    leave: number;
-  }>>([]);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'employee')) {
       router.push('/login?role=employee');
     }
   }, [user, isLoading, router]);
-
-  useEffect(() => {
-    const fetchAttendanceData = async () => {
-      if (!user) return;
-      
-      try {
-        const data = await attendanceAPI.getAttendance();
-        // Filter for current user's attendance
-        const myRecords = data.filter(record => record.userId === user.id);
-        
-        // Get last 7 days for chart
-        const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const weekData = [];
-        
-        for (let i = 6; i >= 0; i--) {
-          const date = new Date();
-          date.setDate(date.getDate() - i);
-          const dateStr = date.toISOString().split('T')[0];
-          const dayName = daysOfWeek[date.getDay()];
-          
-          const dayRecord = myRecords.find(record => record.date === dateStr);
-          
-          weekData.push({
-            date: dayName,
-            present: dayRecord?.status === 'present' || dayRecord?.status === 'late' ? 1 : 0,
-            absent: dayRecord?.status === 'absent' ? 1 : 0,
-            leave: dayRecord?.status === 'leave' ? 1 : 0
-          });
-        }
-        
-        setWeeklyAttendanceData(weekData);
-      } catch (error) {
-        console.error('Failed to load attendance data:', error);
-      }
-    };
-
-    if (!isLoading && user && user.role === 'employee') {
-      fetchAttendanceData();
-    }
-  }, [isLoading, user]);
 
   if (isLoading || !user) {
     return null;
@@ -242,7 +205,7 @@ export default function EmployeeDashboard() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <AttendanceChart data={weeklyAttendanceData} type="bar" />
+              <AttendanceChart data={mockAttendanceData} type="bar" />
             </motion.div>
           </div>
 

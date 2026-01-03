@@ -189,30 +189,48 @@ export const attendanceAPI = {
 };
 
 // Leave API
+// Helper function to map leave response from snake_case to camelCase
+const mapLeaveResponse = (item: any): LeaveRequest => {
+  return {
+    id: item.id || '',
+    userId: item.user_id || '',
+    userName: item.user?.full_name || item.user_name || 'Unknown',
+    leaveType: item.leave_type || 'casual',
+    startDate: item.start_date || '',
+    endDate: item.end_date || '',
+    reason: item.reason || '',
+    status: item.status || 'pending',
+    appliedDate: item.created_at || '',
+    reviewedBy: item.approved_by || undefined,
+    reviewedDate: item.updated_at || undefined,
+    comment: item.admin_notes || undefined,
+  };
+};
+
 export const leaveAPI = {
   getMyLeaves: async (): Promise<LeaveRequest[]> => {
     const response = await api.get('/leave/my-requests');
-    return response.data;
+    return Array.isArray(response.data) ? response.data.map(mapLeaveResponse) : [];
   },
   getAllLeaves: async (): Promise<LeaveRequest[]> => {
     const response = await api.get('/leave/all');
-    return response.data;
+    return Array.isArray(response.data) ? response.data.map(mapLeaveResponse) : [];
   },
   getPendingLeaves: async (): Promise<LeaveRequest[]> => {
     const response = await api.get('/leave/all?status=pending');
-    return response.data;
+    return Array.isArray(response.data) ? response.data.map(mapLeaveResponse) : [];
   },
   createLeave: async (data: any) => {
     const response = await api.post('/leave', data);
-    return response.data;
+    return mapLeaveResponse(response.data);
   },
   approveLeave: async (leaveId: string, adminNotes?: string) => {
     const response = await api.post(`/leave/${leaveId}/approve`, adminNotes ? { admin_notes: adminNotes } : {});
-    return response.data;
+    return mapLeaveResponse(response.data);
   },
   rejectLeave: async (leaveId: string, adminNotes?: string) => {
     const response = await api.post(`/leave/${leaveId}/reject`, adminNotes ? { admin_notes: adminNotes } : {});
-    return response.data;
+    return mapLeaveResponse(response.data);
   },
 };
 

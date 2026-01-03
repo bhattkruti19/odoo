@@ -34,8 +34,9 @@ export default function AdminLeavePage() {
   const [comment, setComment] = React.useState('');
   const [isProcessing, setIsProcessing] = React.useState(false);
 
-  const calculateDays = (startDate: string, endDate: string): number => {
+  const calculateDays = (startDate: string | undefined, endDate: string | undefined): number => {
     try {
+      if (!startDate || !endDate) return 0;
       const start = new Date(startDate);
       const end = new Date(endDate);
       if (isNaN(start.getTime()) || isNaN(end.getTime())) return 0;
@@ -229,7 +230,7 @@ const fetchLeaveRequests = async () => {
                                     <p className="text-sm font-medium mb-1">Duration</p>
                                     <p className="text-sm text-muted-foreground">
                                       {new Date(request.startDate).toLocaleDateString()} to {new Date(request.endDate).toLocaleDateString()} 
-                                      ({calculateDays(request.startDate, request.endDate)} days)
+                                      ({String(calculateDays(request.startDate, request.endDate))} days)
                                     </p>
                                   </div>
                                   <div>
@@ -293,7 +294,7 @@ const fetchLeaveRequests = async () => {
                             {new Date(request.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(request.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           </TableCell>
                           <TableCell>
-                            {calculateDays(request.startDate, request.endDate)}
+                            {String(calculateDays(request.startDate, request.endDate))}
                           </TableCell>
                           <TableCell>
                             <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
@@ -326,7 +327,7 @@ const fetchLeaveRequests = async () => {
                             {new Date(request.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(request.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           </TableCell>
                           <TableCell>
-                            {calculateDays(request.startDate, request.endDate)}
+                            {String(calculateDays(request.startDate, request.endDate))}
                           </TableCell>
                           <TableCell>
                             <Badge variant="secondary" className="bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
@@ -368,7 +369,7 @@ const fetchLeaveRequests = async () => {
                             </div>
                           </TableCell>
                           <TableCell>
-                            {calculateDays(request.startDate, request.endDate)}
+                            {String(calculateDays(request.startDate, request.endDate))}
                           </TableCell>
                           <TableCell className="max-w-xs truncate">{request.reason}</TableCell>
                           <TableCell>

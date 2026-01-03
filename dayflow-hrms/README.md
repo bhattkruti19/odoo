@@ -1,216 +1,479 @@
 # 🌊 Dayflow HRMS
 
-**Every Workday, Perfectly Aligned.**
-
-A modern, production-grade Human Resource Management System built with Next.js 16, TypeScript, and Tailwind CSS. Features a stunning UI with parallax effects, smooth animations, and comprehensive HR functionality.
+A modern Human Resource Management System built with Next.js 16, FastAPI, and SQLite.
 
 ## ✨ Features
 
-### 🎯 Core Functionality
+- **Employee Portal**: Dashboard, Attendance, Leave, Payroll, Profile
+- **Admin Portal**: Analytics, Employee Management, Leave Approval, Payroll Processing
 
-- **Dual Portal System**: Separate interfaces for employees and administrators
-- **Authentication**: Secure login/register with role-based access control
-- **Real-time Updates**: Mock API integration ready for backend connection
-- **Responsive Design**: Mobile-first approach with beautiful animations
+## 🚀 Quick Start
 
-### 👥 Employee Portal
-
-- **Dashboard**: Overview of attendance, leave balance, and recent activities
-- **Attendance**: Check-in/check-out with attendance history and analytics
-- **Leave Management**: Apply for leave, track status, view balance
-- **Payroll**: View salary breakdown and payment history
-- **Profile**: Update personal information and preferences
-
-### 👨‍💼 Admin Portal
-
-- **Dashboard**: Organization-wide metrics and pending requests
-- **Employee Management**: Complete CRUD operations with search and filters
-- **Attendance Monitoring**: Real-time attendance tracking and reports
-- **Leave Approval**: Review and approve/reject leave requests
-- **Payroll Processing**: Manage salaries and generate payslips
-- **Reports & Analytics**: Generate comprehensive reports with data visualization
-
-## 🚀 Tech Stack
-
-- **Framework**: Next.js 16.1.1 (App Router) with Turbopack
-- **Language**: TypeScript 5
-- **Styling**: Tailwind CSS v4
-- **UI Components**: shadcn/ui
-- **Animations**: Framer Motion
-- **Forms**: React Hook Form + Zod validation
-- **Charts**: Recharts
-- **HTTP Client**: Axios
-- **State Management**: React Context API
-- **Icons**: Lucide React
-- **Font**: Inter (Google Fonts)
-
-## 📦 Installation
-
-1. **Clone the repository**:
+### Backend
 
 ```bash
-git clone <repository-url>
+cd dayflow-hrms-backend
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+python seed.py
+python main.py
+```
+
+### Frontend
+
+```bash
 cd dayflow-hrms
-```
-
-2. **Install dependencies**:
-
-```bash
 npm install
-```
-
-3. **Run the development server**:
-
-```bash
 npm run dev
 ```
 
-4. **Open your browser**:
-   Navigate to [http://localhost:3000](http://localhost:3000)
+## 🔐 Demo Credentials
 
-## 🎨 Design Features
+**Admin**: amit.sharma@dayflow.com / demo123  
+**Employee**: ananya.gupta@dayflow.com / demo123
 
-### Color Palette
+## 📡 API
 
-- **Admin Portal**: Indigo to Blue gradient (#6366f1 → #2563eb)
-- **Employee Portal**: Emerald to Teal gradient (#10b981 → #14b8a6)
+- **Base URL**: http://localhost:8000/api
+- **Docs**: http://localhost:8000/docs
 
-### Animation Highlights
+## 🛠 Tech Stack
 
-- Parallax hero section with floating orbs
-- Smooth page transitions with Framer Motion
-- Interactive hover effects on cards and buttons
-- Animated chart transitions
-- Skeleton loading states
+**Frontend**: Next.js 16, TypeScript, Tailwind CSS  
+**Backend**: FastAPI, SQLAlchemy, JWT  
+**Database**: SQLite
 
-## 🔐 Authentication
+## 📝 License
 
-### Demo Credentials
+MIT
+│ Frontend (Next.js) │
+│ ┌────────────┐ ┌────────────┐ ┌────────────┐ │
+│ │ Pages │ │ Components │ │ Services │ │
+│ │ (App Dir) │ │ (UI/UX) │ │ (API) │ │
+│ └────────────┘ └────────────┘ └────────────┘ │
+└─────────────────────────────────────────────────────────┘
+↕ HTTP/REST
+┌─────────────────────────────────────────────────────────┐
+│ Backend (FastAPI) │
+│ ┌────────────┐ ┌────────────┐ ┌────────────┐ │
+│ │ Routers │ │ Models │ │ Schemas │ │
+│ │ (Endpoints)│ │ (ORM) │ │ (Validation)│ │
+│ └────────────┘ └────────────┘ └────────────┘ │
+└─────────────────────────────────────────────────────────┘
+↕ SQL
+┌─────────────────────────────────────────────────────────┐
+│ Database (SQLite/PostgreSQL) │
+│ ┌────────────┐ ┌────────────┐ ┌────────────┐ │
+│ │ Users │ │ Attendance │ │ Leave │ │
+│ │ Payroll │ │ Master │ │ Auth │ │
+│ └────────────┘ └────────────┘ └────────────┘ │
+└─────────────────────────────────────────────────────────┘
 
-The application includes mock authentication for testing:
+````
 
-**Employee Login**:
+---
 
-- Email: `employee@dayflow.com`
-- Password: Any password
-- Role: Select "Employee"
+## 🚀 Getting Started
 
-**Admin Login**:
+### Prerequisites
 
-- Email: `admin@dayflow.com`
-- Password: Any password
-- Role: Select "Admin"
+- **Node.js** 18.x or higher
+- **Python** 3.10 or higher
+- **pip** or **poetry** for Python package management
+- **Git** for version control
 
-### Routes Protection
+### Installation
 
-- `/employee/*` - Protected employee routes
-- `/admin/*` - Protected admin routes
-- Automatic redirection based on role
+#### 1. Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/dayflow-hrms.git
+cd dayflow-hrms
+````
+
+#### 2. Backend Setup
+
+```bash
+# Navigate to backend directory
+cd dayflow-hrms-backend
+
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+# Windows
+venv\Scripts\activate
+# macOS/Linux
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Initialize database
+python recreate_db.py
+
+# Seed demo data (optional)
+python seed.py
+
+# Start the server
+python main.py
+```
+
+Backend will run on: **http://localhost:8000**
+
+#### 3. Frontend Setup
+
+```bash
+# Navigate to frontend directory (in a new terminal)
+cd dayflow-hrms
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+Frontend will run on: **http://localhost:3000**
+
+### Quick Start with Docker (Coming Soon)
+
+```bash
+docker-compose up -d
+```
+
+---
+
+## 📡 API Documentation
+
+### Base URL
+
+```
+http://localhost:8000/api
+```
+
+### Interactive API Docs
+
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+
+### Authentication
+
+All protected endpoints require a Bearer token:
+
+```bash
+Authorization: Bearer <access_token>
+```
+
+### Core Endpoints
+
+#### Authentication
+
+| Method | Endpoint                  | Description                |
+| ------ | ------------------------- | -------------------------- |
+| POST   | `/auth/login`             | User login                 |
+| POST   | `/auth/admin/create-user` | Admin creates user account |
+| POST   | `/auth/change-password`   | Change user password       |
+
+#### Users
+
+| Method | Endpoint    | Description                 |
+| ------ | ----------- | --------------------------- |
+| GET    | `/users/me` | Get current user profile    |
+| PUT    | `/users/me` | Update current user profile |
+| GET    | `/users`    | Get all users (admin only)  |
+
+#### Attendance
+
+| Method | Endpoint                 | Description                |
+| ------ | ------------------------ | -------------------------- |
+| POST   | `/attendance/check-in`   | Employee check-in          |
+| POST   | `/attendance/check-out`  | Employee check-out         |
+| GET    | `/attendance/my-records` | Get personal attendance    |
+| GET    | `/attendance/all`        | Get all attendance (admin) |
+
+#### Leave Management
+
+| Method | Endpoint              | Description                    |
+| ------ | --------------------- | ------------------------------ |
+| POST   | `/leave`              | Create leave request           |
+| GET    | `/leave/my-requests`  | Get personal leave requests    |
+| GET    | `/leave/all`          | Get all leave requests (admin) |
+| POST   | `/leave/{id}/approve` | Approve leave request (admin)  |
+| POST   | `/leave/{id}/reject`  | Reject leave request (admin)   |
+
+#### Payroll
+
+| Method | Endpoint        | Description                   |
+| ------ | --------------- | ----------------------------- |
+| GET    | `/payroll`      | Get payroll records           |
+| PUT    | `/payroll/{id}` | Update payroll record (admin) |
+
+---
+
+## 🔐 Demo Credentials
+
+The system comes pre-seeded with 26 demo accounts:
+
+### Admin Accounts
+
+| Email                   | Password | Department |
+| ----------------------- | -------- | ---------- |
+| amit.sharma@dayflow.com | demo123  | HR         |
+| dhiraj@admin.com        | admin123 | HR         |
+| priya.singh@dayflow.com | demo123  | HR         |
+| ravi.iyer@dayflow.com   | demo123  | HR         |
+
+### Employee Accounts
+
+| Email                    | Password | Department  |
+| ------------------------ | -------- | ----------- |
+| ananya.gupta@dayflow.com | demo123  | Engineering |
+| rohit.verma@dayflow.com  | demo123  | Engineering |
+| sneha.nair@dayflow.com   | demo123  | Engineering |
+| vikram.desai@dayflow.com | demo123  | Product     |
+| meera.pillai@dayflow.com | demo123  | Design      |
+
+_See `seed.py` for complete list of demo accounts_
+
+---
 
 ## 📁 Project Structure
 
+### Frontend (`/dayflow-hrms`)
+
 ```
 dayflow-hrms/
-├── app/                    # Next.js App Router pages
-│   ├── admin/             # Admin portal pages
-│   ├── employee/          # Employee portal pages
-│   ├── login/             # Authentication
-│   ├── register/          # User registration
-│   ├── layout.tsx         # Root layout with providers
-│   └── page.tsx           # Landing page
+├── app/                       # Next.js App Router
+│   ├── admin/                # Admin portal pages
+│   │   ├── attendance/
+│   │   ├── dashboard/
+│   │   ├── employees/
+│   │   ├── leave/
+│   │   ├── payroll/
+│   │   └── reports/
+│   ├── employee/             # Employee portal pages
+│   │   ├── attendance/
+│   │   ├── dashboard/
+│   │   ├── leave/
+│   │   ├── payroll/
+│   │   └── profile/
+│   ├── login/                # Authentication
+│   ├── layout.tsx            # Root layout
+│   └── page.tsx              # Landing page
 ├── components/
-│   ├── charts/            # Recharts visualizations
-│   ├── layout/            # Navigation components
-│   └── ui/                # shadcn/ui components
+│   ├── charts/               # Data visualizations
+│   ├── dialogs/              # Modal components
+│   ├── layout/               # Navigation & layout
+│   └── ui/                   # shadcn/ui components
 ├── context/
-│   ├── AuthContext.tsx    # Authentication state
-│   └── ThemeContext.tsx   # Dark mode support
+│   ├── AuthContext.tsx       # Authentication state
+│   └── ThemeContext.tsx      # Theme management
 ├── services/
-│   └── api.ts             # API service layer
+│   └── api.ts                # API client & endpoints
 ├── types/
-│   └── index.ts           # TypeScript interfaces
+│   └── index.ts              # TypeScript interfaces
 └── utils/
-    └── utils.ts           # Utility functions
+    └── utils.ts              # Helper functions
 ```
 
-## 🔌 API Integration
+### Backend (`/dayflow-hrms-backend`)
 
-The application is structured to easily connect to a backend API. All API calls are centralized in `services/api.ts`:
-
-```typescript
-// Current mock implementation
-const API_URL = 'http://localhost:8000/api';
-
-// API modules available:
-- authAPI: login, register, logout
-- userAPI: get, update, delete
-- attendanceAPI: checkIn, checkOut, getRecords
-- leaveAPI: apply, approve, reject, getRequests
-- payrollAPI: get, update, generatePayslip
-- reportsAPI: getStats, generateReport
+```
+dayflow-hrms-backend/
+├── routers/                  # API route handlers
+│   ├── auth_routes.py
+│   ├── user_routes.py
+│   ├── attendance_routes.py
+│   ├── leave_routes.py
+│   ├── payroll_routes.py
+│   └── master_employee_routes.py
+├── alembic/                  # Database migrations
+│   └── env.py
+├── __pycache__/
+├── auth.py                   # Authentication logic
+├── config.py                 # Configuration settings
+├── database.py               # Database connection
+├── models.py                 # SQLAlchemy models
+├── schemas.py                # Pydantic schemas
+├── main.py                   # FastAPI application
+├── seed.py                   # Database seeding
+├── recreate_db.py            # Database initialization
+├── requirements.txt          # Python dependencies
+└── alembic.ini               # Alembic configuration
 ```
 
-### Environment Variables (optional)
+---
 
-Create a `.env.local` file:
+## 🗄 Database Schema
+
+### Core Tables
+
+#### Users
+
+- `id` (Primary Key)
+- `login_id` (Unique)
+- `email` (Unique)
+- `full_name`
+- `hashed_password`
+- `role` (admin/employee)
+- `employee_id`
+- `department`
+- `position`
+- `phone`, `address`, `date_of_birth`, `emergency_contact`
+- `join_date`, `salary`, `avatar`
+- `must_change_password`
+
+#### AttendanceRecord
+
+- `id` (Primary Key)
+- `user_id` (Foreign Key → Users)
+- `date`
+- `check_in`, `check_out`
+- `status` (present/absent/late/leave)
+- `working_hours`
+
+#### LeaveRequest
+
+- `id` (Primary Key)
+- `user_id` (Foreign Key → Users)
+- `leave_type` (sick/casual/annual/unpaid)
+- `start_date`, `end_date`
+- `reason`, `status`
+- `admin_notes`
+- `approved_by` (Foreign Key → Users)
+- `created_at`, `updated_at`
+
+#### PayrollRecord
+
+- `id` (Primary Key)
+- `user_id` (Foreign Key → Users)
+- `month`, `year`
+- `basic_salary`, `allowances`, `deductions`
+- `gross_salary`, `net_salary`, `tax`
+- `payment_date`, `payment_status`
+
+#### MasterEmployee
+
+- Pre-approval employee registry
+- Links to Users table when registered
+
+---
+
+## 🔒 Security Features
+
+- ✅ **Password Hashing**: Bcrypt with salt rounds
+- ✅ **JWT Authentication**: Secure token-based auth
+- ✅ **Role-Based Access Control**: Admin vs Employee permissions
+- ✅ **CORS Protection**: Configurable allowed origins
+- ✅ **SQL Injection Prevention**: SQLAlchemy ORM
+- ✅ **Input Validation**: Pydantic schemas
+- ✅ **Password Policies**: Minimum length requirements
+- ✅ **Session Management**: Token expiration handling
+
+---
+
+## 🎨 Design System
+
+### Color Palette
+
+**Admin Portal**
+
+- Primary: Indigo to Blue gradient (#6366f1 → #2563eb)
+- Accent: Purple tones
+
+**Employee Portal**
+
+- Primary: Emerald to Teal gradient (#10b981 → #14b8a6)
+- Accent: Green tones
+
+### Typography
+
+- **Font Family**: Inter (Google Fonts)
+- **Headings**: 700 weight
+- **Body**: 400 weight
+
+### Components
+
+- Consistent 8px spacing grid
+- Rounded corners (0.5rem default)
+- Subtle shadows and hover effects
+- Smooth transitions (150-300ms)
+
+---
+
+## 🧪 Testing
+
+### Run Frontend Tests
+
+```bash
+npm run test
+```
+
+### Run Backend Tests
+
+```bash
+pytest
+```
+
+### Manual Testing Checklist
+
+- [ ] User authentication (login/logout)
+- [ ] Employee CRUD operations
+- [ ] Attendance check-in/check-out
+- [ ] Leave request workflow
+- [ ] Payroll calculations
+- [ ] Admin approval flows
+- [ ] Profile updates
+- [ ] Report generation
+
+---
+
+## 🚀 Deployment
+
+### Frontend (Vercel)
+
+```bash
+npm run build
+vercel --prod
+```
+
+### Backend (Railway/Render)
+
+```bash
+# Set environment variables
+PYTHON_VERSION=3.10
+DATABASE_URL=postgresql://...
+SECRET_KEY=your-secret-key
+
+# Deploy
+git push railway main
+```
+
+### Environment Variables
+
+**Backend**
+
+```env
+DATABASE_URL=sqlite:///./dayflow_hrms.db
+SECRET_KEY=your-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+COMPANY_PREFIX=DF
+```
+
+**Frontend**
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000/api
 ```
 
-## 🎯 Key Pages
-
-| Route                  | Description                     |
-| ---------------------- | ------------------------------- |
-| `/`                    | Landing page with parallax hero |
-| `/login`               | User authentication             |
-| `/register`            | New user registration           |
-| `/employee/dashboard`  | Employee overview               |
-| `/employee/attendance` | Time tracking                   |
-| `/employee/leave`      | Leave management                |
-| `/employee/payroll`    | Salary information              |
-| `/employee/profile`    | Profile settings                |
-| `/admin/dashboard`     | Admin overview                  |
-| `/admin/employees`     | Employee management             |
-| `/admin/attendance`    | Attendance monitoring           |
-| `/admin/leave`         | Leave approval                  |
-| `/admin/payroll`       | Payroll processing              |
-| `/admin/reports`       | Analytics & reports             |
-
-## 🌙 Dark Mode
-
-Toggle between light and dark themes using the theme switcher in the navbar. Theme preference is persisted in localStorage.
-
-## 📊 Mock Data
-
-All pages include comprehensive mock data for demonstration:
-
-- Employee records with avatars
-- Attendance logs with check-in/out times
-- Leave requests with various statuses
-- Payroll information with salary breakdowns
-- Activity logs and notifications
-- Dashboard statistics and charts
-
-## 🚧 Production Checklist
-
-Before deploying to production:
-
-- [ ] Replace mock authentication with real backend API
-- [ ] Implement proper JWT token handling
-- [ ] Add environment variables for API endpoints
-- [ ] Set up error boundary components
-- [ ] Implement proper loading states
-- [ ] Add form validation error messages
-- [ ] Configure CORS for API requests
-- [ ] Set up analytics tracking
-- [ ] Optimize images with Next.js Image component
-- [ ] Add SEO meta tags
-- [ ] Implement rate limiting
-- [ ] Add unit and integration tests
-- [ ] Configure CI/CD pipeline
+---
 
 ## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
@@ -218,17 +481,46 @@ Before deploying to production:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📝 License
+### Code Standards
 
-This project is licensed under the MIT License.
-
-## 🙏 Acknowledgments
-
-- Built with [Next.js](https://nextjs.org/)
-- UI components from [shadcn/ui](https://ui.shadcn.com/)
-- Icons by [Lucide](https://lucide.dev/)
-- Animations powered by [Framer Motion](https://www.framer.com/motion/)
+- **Frontend**: ESLint + Prettier
+- **Backend**: Black + isort
+- **Commits**: Conventional Commits format
+- **Testing**: Write tests for new features
 
 ---
 
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- [Next.js](https://nextjs.org/) - The React Framework
+- [FastAPI](https://fastapi.tiangolo.com/) - Modern Python web framework
+- [shadcn/ui](https://ui.shadcn.com/) - Beautiful UI components
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS
+- [Framer Motion](https://www.framer.com/motion/) - Animation library
+- [Lucide](https://lucide.dev/) - Icon set
+
+---
+
+## 📞 Support
+
+For questions or support:
+
+- 📧 Email: support@dayflow.com
+- 💬 Discord: [Join our community](https://discord.gg/dayflow)
+- 📖 Documentation: [docs.dayflow.com](https://docs.dayflow.com)
+
+---
+
+<div align="center">
+
 **Made with ❤️ for modern HR teams**
+
+[⭐ Star us on GitHub](https://github.com/yourusername/dayflow-hrms) | [🐛 Report Bug](https://github.com/yourusername/dayflow-hrms/issues) | [✨ Request Feature](https://github.com/yourusername/dayflow-hrms/issues)
+
+</div>

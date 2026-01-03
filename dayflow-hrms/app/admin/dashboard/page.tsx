@@ -12,8 +12,7 @@ import { AttendanceChart } from '@/components/charts/AttendanceChart';
 import { PayrollChart } from '@/components/charts/PayrollChart';
 import { StatCard } from '@/components/ui/stat-card';
 import { PageHeader } from '@/components/ui/page-header';
-import { userAPI, leaveAPI, attendanceAPI, payrollAPI } from '@/services/api';
-import { PayrollRecord } from '@/types/index';
+import { userAPI, leaveAPI } from '@/services/api';
 import { toast } from 'sonner';
 import {
   Users,
@@ -35,19 +34,28 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+const mockAttendanceData = [
+  { date: 'Mon', present: 231, absent: 8, leave: 6 },
+  { date: 'Tue', present: 235, absent: 5, leave: 5 },
+  { date: 'Wed', present: 230, absent: 10, leave: 5 },
+  { date: 'Thu', present: 238, absent: 4, leave: 3 },
+  { date: 'Fri', present: 231, absent: 8, leave: 6 },
+];
+
+const mockPayrollData = [
+  { month: 'Jul', amount: 450000 },
+  { month: 'Aug', amount: 465000 },
+  { month: 'Sep', amount: 470000 },
+  { month: 'Oct', amount: 475000 },
+  { month: 'Nov', amount: 478000 },
+  { month: 'Dec', amount: 482000 },
+];
+
 export default function AdminDashboard() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
   const [employees, setEmployees] = useState<any[]>([]);
   const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
-  const [weeklyAttendanceData, setWeeklyAttendanceData] = useState<Array<{
-    date: string;
-    present: number;
-    absent: number;
-    leave: number;
-  }>>([]);
-  const [payrollChartData, setPayrollChartData] = useState<Array<{ month: string; amount: number }>>([]);
-  const [allPayrollRecords, setAllPayrollRecords] = useState<PayrollRecord[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
@@ -60,80 +68,12 @@ export default function AdminDashboard() {
     const fetchData = async () => {
       try {
         setLoadingData(true);
-        const [usersData, leavesData, attendanceData] = await Promise.all([
+        const [usersData, leavesData] = await Promise.all([
           userAPI.getAllUsers(),
-          leaveAPI.getPendingLeaves(),
-          attendanceAPI.getAttendance()
+          leaveAPI.getPendingLeaves()
         ]);
-        const filteredEmployees = usersData.filter(e => e.role === 'employee');
-        setEmployees(filteredEmployees);
+        setEmployees(usersData.filter(e => e.role === 'employee'));
         setLeaveRequests(leavesData);
-
-        // Process attendance data for chart (last 5 days)
-        const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const weekData = [];
-        
-        for (let i = 4; i >= 0; i--) {
-          const date = new Date();
-          date.setDate(date.getDate() - i);
-          const dateStr = date.toISOString().split('T')[0];
-          const dayName = daysOfWeek[date.getDay()];
-          
-          const dayRecords = attendanceData.filter(record => record.date === dateStr);
-          const presentCount = dayRecords.filter(r => r.status === 'present' || r.status === 'late').length;
-          const absentCount = dayRecords.filter(r => r.status === 'absent').length;
-          const leaveCount = dayRecords.filter(r => r.status === 'leave').length;
-          
-          weekData.push({
-            date: dayName,
-            present: presentCount,
-            absent: absentCount,
-            leave: leaveCount
-          });
-        }
-        
-        setWeeklyAttendanceData(weekData);
-
-        // Fetch payroll data for chart
-        const allPayroll: PayrollRecord[] = [];
-        for (const emp of filteredEmployees) {
-          try {
-            const payrollData = await payrollAPI.getPayroll(emp.id);
-            allPayroll.push(...payrollData);
-          } catch (error) {
-            console.error(`Error fetching payroll for employee ${emp.id}:`, error);
-          }
-        }
-        
-        setAllPayrollRecords(allPayroll);
-
-        // Generate chart data for last 6 months
-        const monthMap: { [key: number]: string } = {
-          1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
-          7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'
-        };
-        
-        const monthlyTotals: { [key: string]: number } = {};
-        allPayroll.forEach((record: any) => {
-          const monthKey = `${record.year}-${record.month}`;
-          if (!monthlyTotals[monthKey]) {
-            monthlyTotals[monthKey] = 0;
-          }
-          monthlyTotals[monthKey] += record.net_salary || 0;
-        });
-
-        const chartData = Object.entries(monthlyTotals)
-          .sort()
-          .slice(-6)
-          .map(([monthKey, amount]) => {
-            const [year, month] = monthKey.split('-');
-            return {
-              month: monthMap[parseInt(month)] || month,
-              amount: Math.round(amount)
-            };
-          });
-
-        setPayrollChartData(chartData);
       } catch (error) {
         toast.error('Failed to load dashboard data');
         console.error(error);
@@ -209,6 +149,7 @@ export default function AdminDashboard() {
         <PageHeader
           title="Admin Dashboard"
           description="Monitor and manage your organization's workforce"
+          userName={user.name}
         />
 
         {/* Stats Grid */}
@@ -228,10 +169,10 @@ export default function AdminDashboard() {
         {/* Charts Grid */}
         <div className="grid gap-6 lg:grid-cols-2">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
-            <AttendanceChart data={weeklyAttendanceData} type="bar" />
+            <AttendanceChart data={mockAttendanceData} type="bar" />
           </motion.div>
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
-            <PayrollChart data={payrollChartData.length > 0 ? payrollChartData : [{month: 'No data', amount: 0}]} />
+            <PayrollChart data={mockPayrollData} />
           </motion.div>
         </div>
 

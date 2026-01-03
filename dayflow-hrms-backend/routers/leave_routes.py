@@ -40,7 +40,7 @@ def create_leave_request(
     return leave_request
 
 
-@router.get("/my-requests", response_model=List[LeaveRequestResponse])
+@router.get("/my-requests")
 def get_my_leave_requests(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
@@ -58,10 +58,30 @@ def get_my_leave_requests(
         query = query.filter(LeaveRequest.status == status)
     
     requests = query.order_by(LeaveRequest.created_at.desc()).offset(skip).limit(limit).all()
-    return requests
+    
+    # Map to include user name
+    result = []
+    for req in requests:
+        req_dict = {
+            "id": req.id,
+            "user_id": req.user_id,
+            "user_name": current_user.full_name,
+            "leave_type": req.leave_type.value,
+            "start_date": req.start_date.isoformat(),
+            "end_date": req.end_date.isoformat(),
+            "reason": req.reason,
+            "status": req.status.value,
+            "admin_notes": req.admin_notes,
+            "approved_by": req.approved_by,
+            "created_at": req.created_at.isoformat() if req.created_at else None,
+            "updated_at": req.updated_at.isoformat() if req.updated_at else None,
+        }
+        result.append(req_dict)
+    
+    return result
 
 
-@router.get("/all", response_model=List[LeaveRequestResponse])
+@router.get("/all")
 def get_all_leave_requests(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
@@ -83,7 +103,27 @@ def get_all_leave_requests(
         query = query.filter(LeaveRequest.leave_type == leave_type)
     
     requests = query.order_by(LeaveRequest.created_at.desc()).offset(skip).limit(limit).all()
-    return requests
+    
+    # Map to include user name
+    result = []
+    for req in requests:
+        req_dict = {
+            "id": req.id,
+            "user_id": req.user_id,
+            "user_name": req.user.full_name if req.user else "Unknown",
+            "leave_type": req.leave_type.value,
+            "start_date": req.start_date.isoformat(),
+            "end_date": req.end_date.isoformat(),
+            "reason": req.reason,
+            "status": req.status.value,
+            "admin_notes": req.admin_notes,
+            "approved_by": req.approved_by,
+            "created_at": req.created_at.isoformat() if req.created_at else None,
+            "updated_at": req.updated_at.isoformat() if req.updated_at else None,
+        }
+        result.append(req_dict)
+    
+    return result
 
 
 @router.get("/{request_id}", response_model=LeaveRequestResponse)

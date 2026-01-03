@@ -8,8 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/context/AuthContext';
 import { PayrollChart } from '@/components/charts/PayrollChart';
 import { StatCard } from '@/components/ui/stat-card';
-import { userAPI, payrollAPI } from '@/services/api';
-import { PayrollRecord } from '@/types/index';
+import { userAPI } from '@/services/api';
 import { toast } from 'sonner';
 import { DollarSign, TrendingUp, Users, FileText } from 'lucide-react';
 import {
@@ -21,12 +20,19 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+const mockPayrollData = [
+  { month: 'Jul', amount: 450000 },
+  { month: 'Aug', amount: 465000 },
+  { month: 'Sep', amount: 470000 },
+  { month: 'Oct', amount: 475000 },
+  { month: 'Nov', amount: 478000 },
+  { month: 'Dec', amount: 482000 },
+];
+
 export default function AdminPayrollPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
   const [employees, setEmployees] = useState<any[]>([]);
-  const [allPayrollRecords, setAllPayrollRecords] = useState<PayrollRecord[]>([]);
-  const [payrollChartData, setPayrollChartData] = useState<Array<{ month: string; amount: number }>>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   useEffect(() => {
@@ -39,50 +45,8 @@ export default function AdminPayrollPage() {
     const fetchData = async () => {
       try {
         setLoadingData(true);
-        const employeeData = await userAPI.getAllUsers();
-        const filteredEmployees = employeeData.filter(e => e.role === 'employee');
-        setEmployees(filteredEmployees);
-
-        // Fetch payroll for all employees
-        const allPayroll: PayrollRecord[] = [];
-        for (const emp of filteredEmployees) {
-          try {
-            const payrollData = await payrollAPI.getPayroll(emp.id);
-            allPayroll.push(...payrollData);
-          } catch (error) {
-            console.error(`Error fetching payroll for employee ${emp.id}:`, error);
-          }
-        }
-        
-        setAllPayrollRecords(allPayroll);
-
-        // Generate chart data for last 6 months
-        const monthMap: { [key: number]: string } = {
-          1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
-          7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'
-        };
-        
-        const monthlyTotals: { [key: string]: number } = {};
-        allPayroll.forEach((record: any) => {
-          const monthKey = `${record.year}-${record.month}`;
-          if (!monthlyTotals[monthKey]) {
-            monthlyTotals[monthKey] = 0;
-          }
-          monthlyTotals[monthKey] += record.net_salary || 0;
-        });
-
-        const chartData = Object.entries(monthlyTotals)
-          .sort()
-          .slice(-6)
-          .map(([monthKey, amount]) => {
-            const [year, month] = monthKey.split('-');
-            return {
-              month: monthMap[parseInt(month)] || month,
-              amount: Math.round(amount)
-            };
-          });
-
-        setPayrollChartData(chartData);
+        const data = await userAPI.getAllUsers();
+        setEmployees(data.filter(e => e.role === 'employee'));
       } catch (error) {
         toast.error('Failed to load payroll data');
         console.error(error);
@@ -100,30 +64,21 @@ export default function AdminPayrollPage() {
     return null;
   }
 
-  // Get current month payroll records
-  const currentDate = new Date();
-  const currentMonth = currentDate.getMonth() + 1;
-  const currentYear = currentDate.getFullYear();
+  // Generate mock payroll records for employees
+  const mockPayrollRecords = employees.map((emp, idx) => ({
+    id: emp.id?.toString() || idx.toString(),
+    name: emp.name,
+    employeeId: emp.employeeId,
+    basicSalary: 4500 + idx * 300,
+    allowances: 800 + idx * 50,
+    deductions: 450 + idx * 20,
+    netSalary: 4850 + idx * 300,
+    status: ['paid', 'processing', 'pending'][idx % 3],
+  }));
 
-  const currentMonthPayroll = allPayrollRecords
-    .filter((r: any) => r.month === currentMonth && r.year === currentYear)
-    .map((record: any, idx: number) => {
-      const employee = employees.find(e => e.id === record.user_id);
-      return {
-        id: record.id?.toString() || idx.toString(),
-        name: employee?.full_name || 'Unknown',
-        employeeId: employee?.employee_id || '',
-        basicSalary: record.base_salary || 0,
-        allowances: record.allowances || 0,
-        deductions: record.deductions || 0,
-        netSalary: record.net_salary || 0,
-        status: record.payment_date ? 'paid' : 'pending',
-      };
-    });
-
-  const totalPayroll = currentMonthPayroll.reduce((sum, record) => sum + record.netSalary, 0);
-  const avgSalary = currentMonthPayroll.length > 0 ? (totalPayroll / currentMonthPayroll.length).toFixed(0) : '0';
-  const paidCount = currentMonthPayroll.filter(r => r.status === 'paid').length;
+  const totalPayroll = mockPayrollRecords.reduce((sum, record) => sum + record.netSalary, 0);
+  const avgSalary = (totalPayroll / mockPayrollRecords.length).toFixed(0);
+  const paidCount = mockPayrollRecords.filter(r => r.status === 'paid').length;
 
   return (
     <DashboardLayout role="admin">
@@ -146,7 +101,7 @@ export default function AdminPayrollPage() {
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
             <StatCard
               title="Total Employees"
-              value={currentMonthPayroll.length.toString()}
+              value={mockPayrollRecords.length.toString()}
               icon={Users}
               trend={{ value: '+2 this month', isPositive: true }}
             />
@@ -162,7 +117,7 @@ export default function AdminPayrollPage() {
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}>
             <StatCard
               title="Processed"
-              value={`${paidCount}/${currentMonthPayroll.length}`}
+              value={`${paidCount}/${mockPayrollRecords.length}`}
               icon={TrendingUp}
               trend={{ value: '+1 processed', isPositive: true }}
             />
@@ -171,7 +126,7 @@ export default function AdminPayrollPage() {
 
         {/* Chart */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <PayrollChart data={payrollChartData.length > 0 ? payrollChartData : [{month: 'No data', amount: 0}]} />
+          <PayrollChart data={mockPayrollData} />
         </motion.div>
 
         {/* Payroll Table */}
@@ -194,7 +149,7 @@ export default function AdminPayrollPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {currentMonthPayroll.map((record) => (
+                  {mockPayrollRecords.map((record) => (
                     <TableRow key={record.id}>
                       <TableCell>
                         <div>
@@ -211,6 +166,8 @@ export default function AdminPayrollPage() {
                           className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                             record.status === 'paid'
                               ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300'
+                              : record.status === 'processing'
+                              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
                               : 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'
                           }`}
                         >
@@ -236,19 +193,19 @@ export default function AdminPayrollPage() {
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Total Basic Salary</p>
                   <p className="text-2xl font-bold">
-                    ₹{currentMonthPayroll.reduce((sum, r) => sum + r.basicSalary, 0).toLocaleString()}
+                    ₹{mockPayrollRecords.reduce((sum, r) => sum + r.basicSalary, 0).toLocaleString()}
                   </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Total Allowances</p>
                   <p className="text-2xl font-bold text-emerald-600">
-                    +₹{currentMonthPayroll.reduce((sum, r) => sum + r.allowances, 0).toLocaleString()}
+                    +₹{mockPayrollRecords.reduce((sum, r) => sum + r.allowances, 0).toLocaleString()}
                   </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Total Deductions</p>
                   <p className="text-2xl font-bold text-red-600">
-                    -₹{currentMonthPayroll.reduce((sum, r) => sum + r.deductions, 0).toLocaleString()}
+                    -₹{mockPayrollRecords.reduce((sum, r) => sum + r.deductions, 0).toLocaleString()}
                   </p>
                 </div>
               </div>
