@@ -30,58 +30,9 @@ npm run dev
 
 ## 🔐 Demo Credentials
 
-**Admin**: amit.sharma@dayflow.com / demo123  
+**Admin**: dhiraj@admin.com / admin123  
 **Employee**: ananya.gupta@dayflow.com / demo123
 
-## 📡 API
-
-- **Base URL**: http://localhost:8000/api
-- **Docs**: http://localhost:8000/docs
-
-## 🛠 Tech Stack
-
-**Frontend**: Next.js 16, TypeScript, Tailwind CSS  
-**Backend**: FastAPI, SQLAlchemy, JWT  
-**Database**: SQLite
-
-## 📝 License
-
-MIT
-│ Frontend (Next.js) │
-│ ┌────────────┐ ┌────────────┐ ┌────────────┐ │
-│ │ Pages │ │ Components │ │ Services │ │
-│ │ (App Dir) │ │ (UI/UX) │ │ (API) │ │
-│ └────────────┘ └────────────┘ └────────────┘ │
-└─────────────────────────────────────────────────────────┘
-↕ HTTP/REST
-┌─────────────────────────────────────────────────────────┐
-│ Backend (FastAPI) │
-│ ┌────────────┐ ┌────────────┐ ┌────────────┐ │
-│ │ Routers │ │ Models │ │ Schemas │ │
-│ │ (Endpoints)│ │ (ORM) │ │ (Validation)│ │
-│ └────────────┘ └────────────┘ └────────────┘ │
-└─────────────────────────────────────────────────────────┘
-↕ SQL
-┌─────────────────────────────────────────────────────────┐
-│ Database (SQLite/PostgreSQL) │
-│ ┌────────────┐ ┌────────────┐ ┌────────────┐ │
-│ │ Users │ │ Attendance │ │ Leave │ │
-│ │ Payroll │ │ Master │ │ Auth │ │
-│ └────────────┘ └────────────┘ └────────────┘ │
-└─────────────────────────────────────────────────────────┘
-
-````
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- **Node.js** 18.x or higher
-- **Python** 3.10 or higher
-- **pip** or **poetry** for Python package management
-- **Git** for version control
 
 ### Installation
 
@@ -136,12 +87,6 @@ npm run dev
 ```
 
 Frontend will run on: **http://localhost:3000**
-
-### Quick Start with Docker (Coming Soon)
-
-```bash
-docker-compose up -d
-```
 
 ---
 
@@ -481,13 +426,6 @@ We welcome contributions! Please follow these steps:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-### Code Standards
-
-- **Frontend**: ESLint + Prettier
-- **Backend**: Black + isort
-- **Commits**: Conventional Commits format
-- **Testing**: Write tests for new features
-
 ---
 
 ## 📝 License
@@ -495,32 +433,3 @@ We welcome contributions! Please follow these steps:
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
-
-## 🙏 Acknowledgments
-
-- [Next.js](https://nextjs.org/) - The React Framework
-- [FastAPI](https://fastapi.tiangolo.com/) - Modern Python web framework
-- [shadcn/ui](https://ui.shadcn.com/) - Beautiful UI components
-- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS
-- [Framer Motion](https://www.framer.com/motion/) - Animation library
-- [Lucide](https://lucide.dev/) - Icon set
-
----
-
-## 📞 Support
-
-For questions or support:
-
-- 📧 Email: support@dayflow.com
-- 💬 Discord: [Join our community](https://discord.gg/dayflow)
-- 📖 Documentation: [docs.dayflow.com](https://docs.dayflow.com)
-
----
-
-<div align="center">
-
-**Made with ❤️ for modern HR teams**
-
-[⭐ Star us on GitHub](https://github.com/yourusername/dayflow-hrms) | [🐛 Report Bug](https://github.com/yourusername/dayflow-hrms/issues) | [✨ Request Feature](https://github.com/yourusername/dayflow-hrms/issues)
-
-</div>
